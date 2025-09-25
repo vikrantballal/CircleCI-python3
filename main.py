@@ -5,7 +5,8 @@ def say_hello(name):
     print(f'Hello,{name}')
     
 if __name__=='__main__' :
-    name ='Train With Tannu'
+    name ='Train With Vikrant'
     say_hello(name)
     up = to_upper(name)
+
     print(up)
