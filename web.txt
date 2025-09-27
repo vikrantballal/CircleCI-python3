@@ -1,0 +1,1048 @@
+Practical 1: Implementing Client Server communication model using TCP.
+
+Aim A: A client server-based program using TCP to find if the number entered is prime.
+
+Client Code:-
+
+ 
+
+import socket
+
+ 
+
+# Connect to server
+
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+client_socket.connect(("localhost", 8001))
+
+ 
+
+# Take input
+
+num = input("Enter a number: ")
+
+client_socket.send(num.encode())
+
+ 
+
+# Receive response
+
+result = client_socket.recv(1024).decode()
+
+print("Server Response:", result)
+
+ 
+
+client_socket.close()
+
+
+
+
+Server Code:-
+
+ 
+
+import socket
+
+ 
+
+def is_prime(n: int) -> bool:
+
+    if n <= 1:
+
+        return False
+
+    if n <= 3:
+
+        return True
+
+    if n % 2 == 0 or n % 3 == 0:
+
+        return False
+
+    i = 5
+
+    while i * i <= n:
+
+        if n % i == 0 or n % (i + 2) == 0:
+
+            return False
+
+        i += 6
+
+    return True
+
+ 
+
+# Create TCP Server
+
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+server_socket.bind(("localhost", 8001))
+
+server_socket.listen(1)
+
+ 
+
+print("Server started... Waiting for client connection")
+
+ 
+
+client_socket, addr = server_socket.accept()
+
+print(f"Client connected: {addr}")
+
+ 
+
+# Receive number from client
+
+data = client_socket.recv(1024).decode()
+
+num = int(data)
+
+ 
+
+# Check prime and send response
+
+if is_prime(num):
+
+    result = f"{num} is Prime"
+
+else:
+
+    result = f"{num} is Not Prime"
+
+ 
+
+client_socket.send(result.encode())
+
+ 
+
+# Close sockets
+
+client_socket.close()
+
+server_socket.close()
+
+ 
+
+Aim B: A client server TCP based chatting application.
+
+Server Code:-
+
+ 
+
+import socket
+
+ 
+
+# Create TCP Server
+
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+server_socket.bind(("localhost", 8000))
+
+server_socket.listen(1)
+
+ 
+
+print("Waiting for client to connect...")
+
+client_socket, addr = server_socket.accept()
+
+print(f"Client connected: {addr}")
+
+ 
+
+while True:
+
+    # Receive message from client
+
+    receive = client_socket.recv(1024).decode().strip()
+
+    if not receive:
+
+        break
+
+    if receive.upper() == "STOP":
+
+        print("Client ended the chat.")
+
+        break
+
+ 
+
+    print("Client Says:", receive)
+
+ 
+
+    # Send reply from server
+
+    send = input("Server Says: ")
+
+    client_socket.send((send + "\n").encode())
+
+ 
+
+    if send.upper() == "STOP":
+
+        print("Chat ended by server.")
+
+        break
+
+ 
+
+client_socket.close()
+
+server_socket.close()
+
+
+
+
+Client Code:-
+
+ 
+
+import socket
+
+ 
+
+# Connect to server
+
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+client_socket.connect(("localhost", 8000))
+
+ 
+
+print("To stop chatting with server type STOP")
+
+ 
+
+while True:
+
+    # Send message
+
+    msg = input("Client Says: ")
+
+    client_socket.send((msg + "\n").encode())
+
+ 
+
+    if msg.upper() == "STOP":
+
+        print("Chat ended by client.")
+
+        break
+
+ 
+
+    # Receive reply
+
+    reply = client_socket.recv(1024).decode().strip()
+
+    if not reply or reply.upper() == "STOP":
+
+        print("Chat ended by server.")
+
+        break
+
+ 
+
+    print("Server Says:", reply)
+
+ 
+
+client_socket.close()
+
+Practical 2:  Implementing Client Server communication model using UDP.
+
+Aim A: A client server-based program using UDP to find if the number entered is even or odd.
+
+Server Code:
+
+ 
+
+import socket
+
+ 
+
+# Create UDP server socket
+
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+server_socket.bind(("localhost", 2000))
+
+ 
+
+print("UDP Server is running... Waiting for client")
+
+ 
+
+while True:
+
+    data, addr = server_socket.recvfrom(1024)  # receive from client
+
+    msg = data.decode().strip()
+
+    print("Received from client:", msg)
+
+ 
+
+    try:
+
+        num = int(msg)
+
+        if num % 2 == 0:
+
+            result = "Number is even"
+
+        else:
+
+            result = "Number is odd"
+
+    except ValueError:
+
+        result = "Invalid input, please enter a number."
+
+ 
+
+    # send result back to client
+
+    server_socket.sendto(result.encode(), ("localhost", 1000))
+
+ 
+
+Client Code:
+
+ 
+
+import socket
+
+ 
+
+# Create UDP client socket
+
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+client_socket.bind(("localhost", 1000))
+
+ 
+
+# take user input
+
+num = input("Enter a number: ")
+
+ 
+
+# send number to server
+
+client_socket.sendto(num.encode(), ("localhost", 2000))
+
+ 
+
+# receive response from server
+
+data, addr = client_socket.recvfrom(1024)
+
+print("Server Response:", data.decode())
+
+ 
+
+client_socket.close()
+
+ 
+
+ 
+
+Aim B: A client server-based program using UDP to find the factorial of the entered number.
+
+Server Code:-
+
+import socket
+
+import math
+
+ 
+
+# Create UDP server socket
+
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+server_socket.bind(("localhost", 2000))
+
+ 
+
+print("UDP Factorial Server is running... Waiting for client")
+
+ 
+
+while True:
+
+    data, addr = server_socket.recvfrom(1024)  # receive from client
+
+    msg = data.decode().strip()
+
+    print("Received from client:", msg)
+
+ 
+
+    try:
+
+        num = int(msg)
+
+        fact = math.factorial(num)
+
+        result = f"The Factorial of {num} is : {fact}"
+
+    except ValueError:
+
+        result = "Invalid input, please enter a number."
+
+ 
+
+    # send result back to client
+
+    server_socket.sendto(result.encode(), ("localhost", 1000))
+
+ 
+
+Client Code:-
+
+ 
+
+import socket
+
+ 
+
+# Create UDP client socket
+
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+client_socket.bind(("localhost", 1000))
+
+ 
+
+# take user input
+
+num = input("Enter a number: ")
+
+ 
+
+# send number to server
+
+client_socket.sendto(num.encode(), ("localhost", 2000))
+
+ 
+
+# receive response from server
+
+data, addr = client_socket.recvfrom(1024)
+
+print("Server Response:", data.decode())
+
+ 
+
+client_socket.close()
+
+ 
+
+ 
+
+Aim C: A program to implement simple calculator operations like addition, subtraction, multiplication and division.
+
+ 
+
+Server Code:-
+
+ 
+
+import socket
+
+ 
+
+def add(a, b): return a + b
+
+def sub(a, b): return a - b
+
+def mul(a, b): return a * b
+
+def div(a, b): return a // b if b != 0 else "Division by zero error"
+
+ 
+
+# Create UDP server socket
+
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+server_socket.bind(("localhost", 1200))
+
+ 
+
+print("RPC Server is running... Waiting for client requests")
+
+ 
+
+while True:
+
+    data, add = server_socket.recvfrom(4096)
+
+    request = data.decode().strip()
+
+ 
+
+    if request.lower() == "q":
+
+        print("Server shutting down.")
+
+        break
+
+ 
+
+    print("Received request:", request)
+
+ 
+
+    parts = request.split()
+
+    if len(parts) < 3:
+
+        result = "Invalid request. Format: method val1 val2"
+
+    else:
+
+        method = parts[0].lower()
+
+        try:
+
+            val1 = int(parts[1])
+
+            val2 = int(parts[2])
+
+ 
+
+            if method == "add":
+
+                result = str(add(val1, val2))
+
+            elif method == "sub":
+
+                result = str(sub(val1, val2))
+
+            elif method == "mul":
+
+                result = str(mul(val1, val2))
+
+            elif method == "div":
+
+                result = str(div(val1, val2))
+
+            else:
+
+                result = "Unknown method"
+
+        except ValueError:
+
+            result = "Invalid numbers"
+
+ 
+
+    # Send response back to client (port 1300)
+
+    server_socket.sendto(result.encode(), ("localhost", 1300))
+
+    print("Result sent:", result)
+
+ 
+
+Client Code:-
+
+ 
+
+import socket
+
+ 
+
+# Create UDP client socket
+
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+response_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+response_socket.bind(("localhost", 1300))
+
+ 
+
+print("\n RPC Client Started")
+
+print("Enter method and two numbers (e.g., add 5 3)")
+
+print("Type q to quit\n")
+
+ 
+
+while True:
+
+    msg = input(">>> ")
+
+ 
+
+    client_socket.sendto(msg.encode(), ("localhost", 1200))
+
+ 
+
+    if msg.lower() == "q":
+
+        print("Client requested shutdown.")
+
+        break
+
+ 
+
+    data, add = response_socket.recvfrom(4096)
+
+    print("Result =", data.decode(), "\n")
+
+ 
+
+client_socket.close()
+
+response_socket.close()
+
+Practical 3: Write a program to show the object communication using RMI.
+
+ 
+
+Aim A: A RMI based application program to display current date and time.
+
+ 
+
+Server Code:-
+
+from xmlrpc.server import SimpleXMLRPCServer
+
+from datetime import datetime
+
+ 
+
+def get_date_time():
+
+    now = datetime.now()
+
+    return now.strftime("Current Date and Time: %Y-%m-%d %H:%M:%S")
+
+ 
+
+# Create server
+
+server = SimpleXMLRPCServer(("localhost", 8000))
+
+print("Server started on port 8000...")
+
+ 
+
+# Register the function
+
+server.register_function(get_date_time, "get_date_time")
+
+ 
+
+# Run the server's main loop
+
+server.serve_forever()
+
+ 
+
+Client Code:-
+
+import xmlrpc.client
+
+ 
+
+# Connect to the server
+
+proxy = xmlrpc.client.ServerProxy("http://localhost:8000/")
+
+ 
+
+# Call the remote method
+
+date_time = proxy.get_date_time()
+
+ 
+
+print("Received from server:", date_time)
+
+ 
+
+ 
+
+Aim B: A RMI based application program that converts digits to words, e.g. 123 will be converted to one two three.
+
+ 
+
+Server Code:
+
+from xmlrpc.server import SimpleXMLRPCServer
+
+ 
+
+def digit_to_words(number_str):
+
+    digit_map = {
+
+        '0': 'zero', '1': 'one', '2': 'two',
+
+        '3': 'three', '4': 'four', '5': 'five',
+
+        '6': 'six', '7': 'seven', '8': 'eight',
+
+        '9': 'nine'
+
+    }
+
+    result = []
+
+    for digit in number_str:
+
+        if digit in digit_map:
+
+            result.append(digit_map[digit])
+
+        else:
+
+            return "Error: Input contains non-digit characters"
+
+    return ' '.join(result)
+
+ 
+
+# Create server
+
+server = SimpleXMLRPCServer(("localhost", 8000))
+
+print("Server started on port 8000...")
+
+ 
+
+# Register the function
+
+server.register_function(digit_to_words, "digit_to_words")
+
+ 
+
+# Run the server
+
+server.serve_forever()
+
+ 
+
+Client Code:
+
+import xmlrpc.client
+
+ 
+
+# Connect to the server
+
+proxy = xmlrpc.client.ServerProxy("http://localhost:8000/")
+
+ 
+
+while True:
+
+    number = input("Enter digits (or 'exit' to quit): ")
+
+    if number.lower() == 'exit':
+
+        break
+
+    result = proxy.digit_to_words(number)  # method name is 'digit_to_words', not 'digits_to_words'
+
+    print("In words:", result)
+
+Practical 5: Implementation of cluster on Windows Server.
+
+1. Open VMware and create a new virtual machine. Select Typical and click next.
+
+2. Select the disc image file. Keep clicking next.
+
+ 
+
+3. Set the disk size to 90 and select store virtual disk as a single file.
+
+4. Click finish.
+
+ 
+
+5. Copying of System Files will start. After copying files it will automatically start
+
+6. To make the current system a Domain Controller click on “Add Roles and Features” under the “Manage” menu at the top of the screen and get the “Add Roles and Feature Wizard”.
+
+ 
+
+7. Under “Select installation Type” select “Role-based or feature-based installation” and click the “Next” button.
+
+8. Under “select destination Server” select “Select a server from the server pool” option and select the server as shown in the screen below and click “Next”
+
+9. Click on “Active Directory Services”, “DNS” and “DNS” roles from the list of roles provided and click on the “Add Features” button as shown on the screen. Add Features button will appear as you click on any of the roles.After selecting the Role click “Next”.
+
+10. Under “Select Features” select “Failover Clustering” and “.NET Framework 3.5 Features” and click “Next”.
+
+11. You will see the “Confirm Installation selections” then click on the link “specify an alternate path”. Now, For path specification Go to menu VM->use Iso image file of windows server 2012->Ok Then, Go to File Explorer->Computer -> select the DVD->VIEW FILE-> SOURCES->SXS: Now, Click on ok and Install button.
+
+ 
+
+12. After installation Go to the “ADDS” shown on the left side in the server Manager Dashboard as shown in next screen and click on More, then Click on “Promote this server to a domain controller”.
+
+13. Choose the “Add a new forest” option in the “Active Directory Domain services Configuration Wizard” window. Enter the Domain Name “rjcollege.com” as shown in the screen and click “Next”.
+
+
+14. Under “Domain Controller Options” enter the alphanumeric password for the “Directory Services Restore Mode (DSRM) PASSWORD”. Preferably use the password given to the Administrators account. Click “Next”
+
+ 
+
+ 
+
+15. The NetBIOS Domain Name appears here automatically. Click “Next”.
+
+16. Click “Next”.
+
+17. Under “Review Options” it shows us whatever we have selected for the Domain Controller.
+
+ 
+
+ 
+
+18. It checks for all the Prerequisites required to create a Domain Controller under “Prerequisites Check”. Click on the “Install” button.
+
+19. Click on the “Failover Cluster Manager” under the tools menu to get the following screen. Click on “Validation Configuration” to open the “Validate a Configuration Wizard” by clicking on the “Validate Configuration” under the Management section at the bottom or right side of the screen. The nodes to be added must be validated prior to adding in the cluster. Click “Next”.
+
+ 
+
+20. In this screen, click on Browse button and then Advanced for finding the domain node. As shown in below screens.
+
+ 
+
+ 
+
+21. Choose “Run all the tests(recommended)” and click “Next” and then it will ask for the confirmation click “Next”. It will start all test validation.
+
+22. After completion it will display the summary report as shown below. If there are any errors can be seen here and you will not be allowed to create the cluster. As shown in the screen we can see that the nodes are validated. Click on finish.
+
+
+
+
+
+Practical 6: Developing application for Google App Engine.
+
+1. Download Eclipse IDE for Enterprise Java Developers and Install.
+
+2. Open Eclipse and Choose your workspace and click on it.
+
+3. Click on gt; Help &gt; Eclipse Marketplace.
+
+4. Search for “Google cloud tools for eclipse” and click on Install.
+
+5. Click on the ‘File’ menu and select > New > Other.
+
+6.  Search with “Google” keyword and select Google App Engine Standard Java Project under Google Cloud Platform and click on Next.
+
+7. Enter Project Name “FirstGAEProject” and Package Name “com.GAE” and then Click on >Next >Finish.
+
+ 
+
+8. Add the given code in the java file.
+
+package com.GAE;
+ 
+import java.io.IOException;
+ 
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+ 
+@WebServlet(
+    name = "HelloAppEngine",
+    urlPatterns = {"/hello"}
+)
+public class HelloAppEngine extends HttpServlet {
+ 
+    @Override
+    public void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws IOException {
+ 
+        response.setContentType("text/plain");
+        response.setCharacterEncoding("UTF-8");
+ 
+        response.getWriter().print("Hello App Engine!\r\n");
+        response.getWriter().print("This is Google Engine practical");
+    }
+}
+9. Add the given code in the index.html file.
+
+ 
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+    <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
+    <title>Hello App Engine</title>
+</head>
+ 
+<body>
+    <h1>Hello App Engine!</h1>
+ 
+    <table>
+        <tr>
+            <td colspan="2" style="font-weight:bold;">Available Servlets:</td>
+        </tr>
+        <tr>
+            <td><a href=''>Google App Engine</a></td>
+        </tr>
+    </table>
+</body>
+</html>
+ 
+
+10. Configuring “App Engine Standard” Server. Click on the link to create a new server under the Server tab.
+
+ 
+
+11. Click Next.
+
+ 
+
+12. Add the “FirstGAEProject” and click on “Finish”.
+
+ 
+
+13. Start the “App Engine Standard” server.
+
+ 
+
+ 
+
+ 
+
+Addition and Multiplication:
+
+package com.GAE;
+ 
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+ 
+@WebServlet(
+    name = "HelloAppEngine",
+    urlPatterns = {"/hello"}
+)
+public class HelloAppEngine extends HttpServlet {
+ 
+    @Override
+    public void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws IOException {
+ 
+        response.setContentType("text/plain");
+        response.setCharacterEncoding("UTF-8");
+ 
+        response.getWriter().print("Hello App Engine!\r\n");
+        response.getWriter().print("This is Google Engine practical\n");
+ 
+        response.getWriter().print("Sum and Product\n");
+ 
+        // Read request parameters
+        int num1 = Integer.parseInt(request.getParameter("num1"));
+        int num2 = Integer.parseInt(request.getParameter("num2"));
+ 
+        // Perform operations
+        int sum = num1 + num2;
+        int prd = num1 * num2;
+ 
+        // Output result
+        PrintWriter output = response.getWriter();
+        output.println("The sum: " + sum + "\nThe product: " + prd);
+    }
+}
+index.html
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+    <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
+    <title>Hello App Engine</title>
+</head>
+ 
+<body>
+    <h1>Hello App Engine!</h1>
+ 
+    <table>
+        <tr>
+            <td colspan="2" style="font-weight:bold;">Available Servlets:</td>
+        </tr>
+        <tr>
+            <td><a href=''>Google App Engine</a></td>
+        </tr>
+    </table>
+ 
+    <!-- Form to calculate sum and product -->
+    <form action="add_me" method="get">
+        <label>First Number:</label>
+        <input type="text" name="num1" /><br><br>
+ 
+        <label>Second Number:</label>
+        <input type="text" name="num2" /><br><br>
+ 
+        <button type="submit" name="calculator">Product and Sum</button>
+    </form>
+</body>
+</html>
+web.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
+                             http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
+ 
+    <!-- Default page -->
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+ 
+    <!-- Servlet Declaration -->
+    <servlet>
+        <servlet-name>Add</servlet-name>
+        <servlet-class>com.GAE.HelloAppEngine</servlet-class>
+    </servlet>
+ 
+    <!-- Servlet Mapping -->
+    <servlet-mapping>
+        <servlet-name>Add</servlet-name>
+        <url-pattern>/add_me</url-pattern>
+    </servlet-mapping>
+ 
+</web-app>
+
+
+Practical 8: Implement simple cloud simulation in cloudsim.
+
+ 1. Go to File > New > Project.
+
+2. Select Java Project.
+
+
+3. Give Project Name. Uncheck the checkbox and give the location of cloud sim. Click on next
+
+
+4. Go to Libraries > Add external jar > commons-math3-3.1.1.jar
+
+ 5. Above is the snip of the path to open the java file.
+
+Open the java file and run.
